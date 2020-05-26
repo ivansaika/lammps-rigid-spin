@@ -9,7 +9,6 @@
    the GNU General Public License.
 
    See the README file in the top-level LAMMPS directory.
-
 ------------------------------------------------------------------------- */
 
 #include "fix_rigid_spin.h"
