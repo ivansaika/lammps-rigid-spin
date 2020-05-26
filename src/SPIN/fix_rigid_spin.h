@@ -13,7 +13,7 @@
 
 #ifdef FIX_CLASS
 
-FixStyle(rigid,FixRigidSpin)
+FixStyle(rigid/spin,FixRigidSpin)
 
 #else
 
@@ -88,6 +88,11 @@ class FixRigidSpin : public Fix {
   double **vcm;             // velocity of center-of-mass of each
   double **fcm;             // force on center-of-mass of each
   double **inertia;         // 3 principal components of inertia of each
+  
+  // spin
+  double **spcm;
+  double **fmcm;
+
   double **ex_space,**ey_space,**ez_space;
                             // principal axes of each in space coords
   double **angmom;          // angular momentum of each in space coords

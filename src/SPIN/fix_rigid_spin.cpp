@@ -943,12 +943,24 @@ void FixRigidSpin::initial_integrate(int vflag)
     vcm[ibody][1] += dtfm * fcm[ibody][1] * fflag[ibody][1];
     vcm[ibody][2] += dtfm * fcm[ibody][2] * fflag[ibody][2];
 
+    // update sp by half step
+    dtsp = ?; // define half sp timestep
+    // ComputeInteractionsSpin(ibody);
+    ModifyInteractionsSpin(ibody);
+    // AdvanceSingleSpin(ibody)
+    fix->AdvanceSingleSpin(ibody)
+
     // update xcm by full step
 
     xcm[ibody][0] += dtv * vcm[ibody][0];
     xcm[ibody][1] += dtv * vcm[ibody][1];
     xcm[ibody][2] += dtv * vcm[ibody][2];
 
+    // update sp by half step
+    dtsp = ?; // define half sp timestep
+    ComputeInteractionsSpin(ibody);
+    AdvanceSingleSpin(ibody)
+    
     // update angular momentum by 1/2 step
 
     angmom[ibody][0] += dtf * torque[ibody][0] * tflag[ibody][0];
@@ -1055,6 +1067,9 @@ void FixRigidSpin::compute_forces_and_torques()
   int i,ibody;
 
   // sum over atoms to get force and torque on rigid body
+
+  // double **sp = atom->sp;
+  // double **fm = atom->fm;
 
   double **x = atom->x;
   double **f = atom->f;
