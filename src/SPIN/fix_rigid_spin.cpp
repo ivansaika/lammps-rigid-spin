@@ -11,6 +11,8 @@
    See the README file in the top-level LAMMPS directory.
 ------------------------------------------------------------------------- */
 
+// test
+
 #include "fix_rigid_spin.h"
 #include <mpi.h>
 #include <cmath>
