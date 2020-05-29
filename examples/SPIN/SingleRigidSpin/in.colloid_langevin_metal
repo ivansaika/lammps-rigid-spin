@@ -1,0 +1,109 @@
+# LAMMPS input script for modeling the motion of a colloid with a harmonic resoring force applied
+# to its center of mass. 
+# ***Comment out the 'addforce' fix to simulate diffusion and check thermalization
+
+units		metal                                 # change it from nano to metal for using in spin package 
+atom_modify 	map array
+
+#variable nEvery1 equal 50 
+variable nEvery2 equal 20                          # per this time step print the velosity of CM
+variable nEvery3 equal 20                        # per this timestep print the position of atoms 
+variable nrun equal 1000  
+variable damp equal 1
+       
+# These are the units for the fix LB code, if the colloids are large then one can use the 'micro'units as well
+
+dimension	3        
+# Specifies if the simulation box is 2D or 3D; LB supports only 3D
+
+boundary	p p p    
+# This specifies the boundary conditions as 'p'->'periodic' or 'f'->'non-periodic'
+# Fix LB allows non-periodic boundaries only in the z-direction or the xz-plane
+  
+atom_style	hybrid molecular spin
+pair_style	lj/cut 62.86
+# This the specifies the truncated LJ interaction with a cut-off of 6.286 nm
+
+read_data	initial_metal.2
+# This reads in the simulation domain size and the position coordinates for the colloid surface nodes
+# and the center of mass from the data file 'initial.0'
+
+# restart ${nEvery1} colloid.restart.* 
+
+
+# The next 7 Lines are relevant for the case when you have multiple colloids and determine the interactions 
+# between their surface nodes and centers of masses
+neighbor	0.3 bin
+neigh_modify	delay 0 every 1 
+neigh_modify	exclude type 1 2 
+neigh_modify	exclude type 2 2
+
+## The pair coeffs has not changes due to unit change
+pair_coeff      * * 0.0 0.0 62.86
+pair_coeff      1 1 0.025839793281653745 56 62.86
+pair_modify     shift yes
+
+# The next three lines define the different groups for the center(s) of mass(es) of the colloid(s)
+# and the surface nodes of the colloid. The latter is used in the LB fix to specify the interaction 
+group       CoM    type 1                                              
+# This is the center of mass of the colloid henceforth referred to as the CoM
+group       surface	type 2    
+# Group for the nodes on the surface of the extended colloid
+group	    colloids union CoM surface  
+# CoM + the surface nodes make the rigid colloid
+
+mass *  4040.0936958349475          # to change the mass in attogram to gram/mol (1e-18  * #Avogadro) 
+# Mass of the single node on the surface of the colloid the original value was 0.00670873326101511 
+
+timestep 0.3327357           # to change ns to ps (*e-3)   
+# Timestep. This must not be changed arbitrarily as it is related to the grid spacing for the 
+# LB algorithm and the speed of sound in the fluid (the original value was timestep 0.0003327357)
+
+# This is how you define the variables to say apply a force acting on the center of mass group 'CoM'.
+# You can similarly define variables for the fixed magnetization vector of your particle and the 
+# force due to the external magnetic field on it. For the torque from the external magnetic field
+# you would need to use the 'addtorque' fix. 
+
+
+##### coordinates of the CM of the colloid
+variable xcm equal xcm(CoM,x)   
+variable ycm equal xcm(CoM,y)   
+variable zcm equal xcm(CoM,z)	
+
+
+##### components of the CM velocity of a colloid 
+variable vxcm equal vcm(CoM,x)		
+variable vycm equal vcm(CoM,y)	
+variable vzcm equal vcm(CoM,z)	
+
+
+## Thermalize the colloid
+fix	 1	 all rigid/spin molecule      
+
+# velocity CoM create 300.  2346 
+
+fix  lang   all langevin 300. 300. ${damp} 2933  
+fix  nve    all nve
+
+fix 		7 CoM precession/spin zeeman 0.1 0.0 0.0 1.0
+fix 		8 CoM nve/spin lattice frozen
+
+
+compute 	out_mag   all  spin
+#compute 	out_mag   CoM  spin   PRODUCES ERROR
+
+variable 	magx      equal c_out_mag[1]
+variable 	magy      equal c_out_mag[2]
+variable 	magz      equal c_out_mag[3]
+variable 	magnorm   equal c_out_mag[4]
+
+compute outsp CoM property/atom spx spy spz sp 
+
+# The following is used to output the variables associate with the CoM defined earlier during runtime 
+
+#thermo_style   custom step v_xcm v_ycm v_zcm v_vxcm v_vycm v_vzcm
+thermo_style   custom step v_xcm v_ycm v_zcm v_magx v_magy v_magz
+thermo_modify  flush yes
+thermo	   ${nEvery2}
+dump    1   colloids   custom ${nEvery3}   Positions_metal${damp}.lammpstrj id  x y z c_outsp[1] c_outsp[2] c_outsp[3]
+run   ${nrun}
