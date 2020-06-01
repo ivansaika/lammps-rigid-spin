@@ -942,11 +942,11 @@ void FixRigidSpin::initial_integrate(int vflag)
     vcm[ibody][2] += dtfm * fcm[ibody][2] * fflag[ibody][2];
 
     // update sp by half step
-    dtsp = ?; // define half sp timestep
+    // dtsp = ?  define half sp timestep
     // ComputeInteractionsSpin(ibody);
-    ModifyInteractionsSpin(ibody);
+    // ModifyInteractionsSpin(ibody);
     // AdvanceSingleSpin(ibody)
-    fix->AdvanceSingleSpin(ibody)
+    // fix->AdvanceSingleSpin(ibody)
 
     // update xcm by full step
 
@@ -955,9 +955,9 @@ void FixRigidSpin::initial_integrate(int vflag)
     xcm[ibody][2] += dtv * vcm[ibody][2];
 
     // update sp by half step
-    dtsp = ?; // define half sp timestep
-    ComputeInteractionsSpin(ibody);
-    AdvanceSingleSpin(ibody)
+    // dtsp = ?  define half sp timestep
+    // ComputeInteractionsSpin(ibody);
+    // AdvanceSingleSpin(ibody)
     
     // update angular momentum by 1/2 step
 

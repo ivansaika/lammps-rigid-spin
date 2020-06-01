@@ -90,8 +90,8 @@ class FixRigidSpin : public Fix {
   double **inertia;         // 3 principal components of inertia of each
   
   // spin
-//  double **spcm;
-//  double **fmcm;
+  //  double **spcm;
+  //  double **fmcm;
 
   double **ex_space,**ey_space,**ez_space;
                             // principal axes of each in space coords

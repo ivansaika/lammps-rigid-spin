@@ -3,12 +3,10 @@
 # ***Comment out the 'addforce' fix to simulate diffusion and check thermalization
 
 units		metal                                 # change it from nano to metal for using in spin package 
-atom_modify 	map array
-
-#variable nEvery1 equal 50 
+#variable nEvery1 equal 50                         # per this time step write a restart file
 variable nEvery2 equal 20                          # per this time step print the velosity of CM
-variable nEvery3 equal 20                        # per this timestep print the position of atoms 
-variable nrun equal 1000  
+variable nEvery3 equal 50                        # per this timestep print the position of atoms 
+variable nrun equal 200  
 variable damp equal 1
        
 # These are the units for the fix LB code, if the colloids are large then one can use the 'micro'units as well
@@ -20,7 +18,7 @@ boundary	p p p
 # This specifies the boundary conditions as 'p'->'periodic' or 'f'->'non-periodic'
 # Fix LB allows non-periodic boundaries only in the z-direction or the xz-plane
   
-atom_style	hybrid molecular spin
+atom_style	hybrid molecular 
 pair_style	lj/cut 62.86
 # This the specifies the truncated LJ interaction with a cut-off of 6.286 nm
 
@@ -78,32 +76,15 @@ variable vzcm equal vcm(CoM,z)
 
 
 ## Thermalize the colloid
-fix	 1	 all rigid/spin molecule      
+fix	 1	 all rigid/spin  molecule      
 
 # velocity CoM create 300.  2346 
 
-fix  lang   all langevin 300. 300. ${damp} 2933  
+fix  lang   all langevin 3000. 3000. ${damp} 2933  
 fix  nve    all nve
 
-fix 		7 CoM precession/spin zeeman 0.1 0.0 0.0 1.0
-fix 		8 CoM nve/spin lattice frozen
-
-
-compute 	out_mag   all  spin
-#compute 	out_mag   CoM  spin   PRODUCES ERROR
-
-variable 	magx      equal c_out_mag[1]
-variable 	magy      equal c_out_mag[2]
-variable 	magz      equal c_out_mag[3]
-variable 	magnorm   equal c_out_mag[4]
-
-compute outsp CoM property/atom spx spy spz sp 
-
-# The following is used to output the variables associate with the CoM defined earlier during runtime 
-
-#thermo_style   custom step v_xcm v_ycm v_zcm v_vxcm v_vycm v_vzcm
-thermo_style   custom step v_xcm v_ycm v_zcm v_magx v_magy v_magz
+thermo_style   custom step v_xcm v_ycm v_zcm v_vxcm v_vycm v_vzcm
 thermo_modify  flush yes
 thermo	   ${nEvery2}
-dump    1   colloids   custom ${nEvery3}   Positions_metal${damp}.lammpstrj id  x y z c_outsp[1] c_outsp[2] c_outsp[3]
+dump    1   colloids   custom ${nEvery3}   Positions_metal${damp}.lammpstrj id  x y z
 run   ${nrun}
